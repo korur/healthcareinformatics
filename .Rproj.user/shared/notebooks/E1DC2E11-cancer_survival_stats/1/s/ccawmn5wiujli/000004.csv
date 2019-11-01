@@ -1,0 +1,6 @@
+"0","cancer <- na.omit(cancer)[-2, 1:5]"
+"0","colnames(cancer) <- c(""type"", ""start"", ""end"", ""Absolute"", ""Proportional"")"
+"0","cancer[,2:5] <- sapply(cancer[,2:5], as.numeric)"
+"0","cancer$type[19] <- ""Uterus"""
+"0","cancer$type[16] <- ""Prostate (Men)"""
+"0","head(cancer)"
