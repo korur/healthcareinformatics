@@ -2,17 +2,19 @@
 
 I visualized the improvement of cancer survival rates between 1975-77 to 2006-2012.
 
+**Data**: Original publication and the excel file [here](data)
+
+**Code**: click [here](code/cancer_survival_stats.Rmd)
+
+**Note**: Link to my blog with similar posts with detailed annotations [here](https://www.dataatomic.com)
+
+
 ## Lolipop plot
 
 <p align="center">
   <img src="images/plot_cancer_survival_stats.png">
 </p>
 
-**Data**: Original publication and the excel file [here](data)
-
-**Code**: click [here](code/cancer_survival_stats.Rmd)
-
-**Note**: Please visit my blog to find similar posts with detailed annotations [posts](https://www.dataatomic.com)
 
 ## Waffle plot
 
@@ -21,6 +23,9 @@ I visualized the improvement of cancer survival rates between 1975-77 to 2006-20
 </p>
 
 ## Animated
+
+-Coming Soon- 
+
 
 Data source:
 
