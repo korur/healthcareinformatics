@@ -18,7 +18,7 @@ library(tidyverse) # ggplot2, dplyr, tidyr, readr,
 library(ggdark)
 
 
-cancer <- read_excel( "cancersurvivalstatistics.xls", sheet = 3)
+cancer <- read_excel( "data/cancersurvivalstatistics.xls", sheet = 3)
 
 ```
 
