@@ -26,6 +26,10 @@ I visualized the improvement of cancer survival rates between 1975-77 to 2006-20
 
 -Coming Soon- 
 
+<p align="center">
+  <img src="survival.gif">
+</p>
+
 
 Data source:
 
