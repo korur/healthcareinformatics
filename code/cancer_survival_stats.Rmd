@@ -16,7 +16,7 @@ library(readxl)
 library(tidyverse) # ggplot2, dplyr, tidyr, readr, 
                    # purrr, tibble, stringr, forcat
 library(ggdark)
-
+library(animation)
 
 cancer <- read_excel( "data/cancersurvivalstatistics.xls", sheet = 3)
 
@@ -26,10 +26,13 @@ Subset the data
 
 ```{r pre-process}
 cancer <- na.omit(cancer)[-2, 1:5]
-colnames(cancer) <- c("type", "start", "end", "Absolute", "Proportional")
+colnames(cancer) <- c("type", "Y1977", "Y2012", "Absolute", "Proportional")
 cancer[,2:5] <- sapply(cancer[,2:5], as.numeric)
 cancer$type[19] <- "Uterus"
 cancer$type[16] <- "Prostate (Men)"
+cancer$type[1] <- "All Cancers"
+cancer$type[12] <- "Brain / Nervous System"
+cancer$type[6] <- "Liver"
 head(cancer)
 
 ```
@@ -39,15 +42,15 @@ Visualize
 # Final Plot
 ```{r Final}
 cancer %>% 
-    mutate(type = fct_reorder(type, end)) %>% 
+    mutate(type = fct_reorder(type, Y2012)) %>% 
     ggplot() + 
-    geom_segment(aes(x=start, xend=end-1, y=type, yend=type), color="#00AFBB", size=1, arrow = arrow(length = unit(0.3,"cm"), type = "closed")) +
-    geom_point(aes(x=start, y=type),  color="#E7B800", size=2) + 
-    geom_point(aes(x=end, y=type), size=2.5, color = "#FC4E07") + 
+    geom_segment(aes(x=Y1977, xend=Y2012-1, y=type, yend=type), color="#00AFBB", size=1, arrow = arrow(length = unit(0.3,"cm"), type = "closed")) +
+    geom_point(aes(x=Y1977, y=type),  color="#E7B800", size=2) + 
+    geom_point(aes(x=Y2012, y=type), size=2.5, color = "#FC4E07") + 
     geom_point(aes(x=100, y=5), size = 2, color = "#E7B800") +
     geom_point(aes(x=100, y=4), size =2, color = "#FC4E07") + 
-    geom_text(aes(x=94, y=5), color ="#B2B2B2",label ="1975-77") + 
-    geom_text(aes(x=94, y=4), color ="#B2B2B2", label ="2006-12") +
+    geom_text(aes(x=95, y=5), color ="#B2B2B2",label ="1975-77") + 
+    geom_text(aes(x=95, y=4), color ="#B2B2B2", label ="2006-12") +
     dark_theme_gray() +
     theme(plot.margin=unit(c(1,1,1.5,1.2),"cm"),
           text = element_text(size=16),
@@ -59,14 +62,163 @@ cancer %>%
           axis.ticks.y = element_blank(),
           plot.caption = element_text(size= 12, hjust = 0, vjust = -10),
           plot.subtitle=element_text(size=12, face="italic")) +
-    geom_text(mapping = aes(x = ifelse(cancer$type != c("Uterus", "Cervix Uteri"), start-1, start+1), 
-                            y=type, label=start), hjust = ifelse(cancer$type != c("Uterus", "Cervix Uteri"),"right", "left"), vjust=0.28) +
-    geom_text(mapping = aes(x = ifelse(cancer$type != c("Uterus", "Cervix Uteri"), end+2, end-1), 
-                            y=type, label=end), hjust = ifelse(cancer$type != c("Uterus", "Cervix Uteri"), "left","right"), vjust=0.28) +
+    geom_text(mapping = aes(x = ifelse(cancer$type != "Uterus", Y1977-1, Y1977+2), 
+                            y=type, label=Y1977), hjust = ifelse(cancer$type != "Uterus","right", "left"), vjust=0.28) +
+    geom_text(mapping = aes(x = ifelse(cancer$type != "Uterus", Y2012+2, Y2012-1), 
+                            y=type, label=Y2012), hjust = ifelse(cancer$type != "Uterus", "left","right"), vjust=0.28) +
     coord_cartesian(xlim = c(0, 110), expand =1) +
     scale_x_continuous(labels = function(x) paste0(x, "%")) + 
-    labs( caption= "Data: https://doi.org/10.1093/jnci/djx030, \nVisualization: Serdar Korur \nwww.dataatomic.com",
+    labs( caption= "Data: https://doi.org/10.1093/jnci/djx030 \nVisualization: Serdar Korur",
           title = "Improvement in cancer survival rates in US", 
-          subtitle="Five year survival rates of most common cancer types \ncompared between 1975-77 and 2006-2012. All genders & races.")
+          subtitle="Five year survival rates of most common cancer types \ncompared between 1975-77 and 2006-12")
 ```
 
+
+# Cancer waffle graph (1975-1977)
+
+```{r 1975-77 period}
+waffle_77 <- cancer %>% mutate(Y1977 = round(Y1977, 0), Y2012=round(Y2012,0)) 
+waffle_77 <- waffle_77 %>% mutate(Yes = Y1977)
+waffle_77 <- waffle_77 %>% mutate(No = 100-Yes)
+waffle_77 <- waffle_77[ ,c(1,6,7)]
+# Gather the values 
+waffle_tall <- waffle_77 %>% gather(survived, n, -type)
+
+# Final 1
+# cancer Survival rates in 20 most common cancers
+p1 <- waffle_tall %>% 
+  filter(survived %in% c("Yes", "No")) %>% ggplot(aes(fill=survived, values=n)) + 
+  geom_waffle(color = "white", 
+              size = .25, 
+              n_rows = 10,
+              flip = TRUE) + facet_wrap(~type, nrow = 5, strip.position = "top") +
+  theme( plot.title = element_text(size=24, color= "black", hjust=0.5),
+        legend.position = c(0.55,0.1), 
+        text = element_text(size=18),
+         axis.text.x =element_blank(),
+      axis.title.x = element_blank(), 
+      axis.text.y=element_blank(),
+      axis.ticks= element_blank()) +
+      scale_fill_manual(values = c("#dfdedc","#16a1c6")) +
+      labs(title = "Five-year survival rates in most common cancers - 1975-77")
+
+```
+
+
+
+# Cancer waffle graph (2006-12)
+
+```{r 2006-12 period}
+waffle_77 <- cancer %>% mutate(Y1977 = round(Y1977, 0), Y2012=round(Y2012,0)) 
+waffle_77 <- waffle_77 %>% mutate(Yes = Y1977)
+waffle_77 <- waffle_77 %>% mutate(No = 100-Yes)
+waffle_77 <- waffle_77[ ,c(1,6,7)]
+# Gather the values 
+waffle_tall <- waffle_77 %>% gather(survived, n, -type)
+
+waffle_tall %>% ggplot(aes(fill=survived, values=n)) + geom_waffle(color = "white", size = .25, n_rows = 10, flip = TRUE) + facet_wrap(~type, nrow = 1, strip.position = "bottom")
+
+
+waffle_12 <- cancer %>% mutate(Y2012 = round(Y2012, 0), Yes=round(Y2012,0)) 
+waffle_12 <- waffle_12 %>% mutate(Yes =Y2012)
+waffle_12 <- waffle_12 %>% mutate(No = 100-Y2012)
+waffle_12 <- waffle_12[ ,c(1,6,7)]
+
+# Gather the values 
+waffle_tall_12 <- waffle_12 %>% gather(survived, n, -type)
+
+
+# Final 1
+# Cancer survival rates in 20 most common cancers
+p2 <- waffle_tall_12 %>% 
+  filter(survived %in% c("Yes", "No")) %>% ggplot(aes(fill=survived, values=n)) + 
+  geom_waffle(color = "white", 
+              size = .25, 
+              n_rows = 10,
+              flip = TRUE) + facet_wrap(~type, nrow = 5, strip.position = "top") +
+  theme( plot.title = element_text(size=24, color= "black", hjust=0.5),
+        legend.position = c(0.55,0.1), 
+        text = element_text(size=18),
+         axis.text.x =element_blank(),
+      axis.title.x = element_blank(), 
+      axis.text.y=element_blank(),
+      axis.ticks= element_blank()) +
+      scale_fill_manual(values = c("#dfdedc","#16a1c6")) +
+      labs(title = "Five-year survival rates in most common cancers - 2006-12")
+
+```
+
+# Animated in white waffle chart
+
+```{r animate waffle chart}
+
+p <- list(p1,p2)
+
+saveGIF({
+    for(i in 1:2) plot(p[[i]])
+},movie.name = "survival.gif", interval = 0.25, nmax = 30, 
+ani.width = 800)
+
+```
+
+# Animated in Black
+
+```{r 1975-77 period}
+# Final 1
+# cancer Survival rates in 20 most common cancers
+p1 <- waffle_tall %>% 
+  filter(survived %in% c("Yes", "No")) %>% ggplot(aes(fill=survived, values=n)) + 
+  geom_waffle(color = "white", 
+              size = .25, 
+              n_rows = 10,
+              flip = TRUE) + facet_wrap(~type, nrow = 5, strip.position = "top") + dark_theme_gray() +
+  theme( plot.title = element_text(size=24, color= "white", hjust=0.5),
+        legend.position = c(0.55,0.1), 
+        text = element_text(size=18),
+         axis.text.x =element_blank(),
+      axis.title.x = element_blank(), 
+      axis.text.y=element_blank(),
+      axis.ticks= element_blank()) +
+      scale_fill_manual(values = c("#dfdedc","#16a1c6")) +
+      labs(title = "Five-year survival rates in most common cancers - 1975-77")
+
+```
+
+
+
+# Cancer waffle graph (2006-12)
+
+```{r 2006-12 period}
+
+# Final 1
+# cancer Survival rates in 20 most common cancers
+p2 <- waffle_tall_12 %>% 
+  filter(survived %in% c("Yes", "No")) %>% ggplot(aes(fill=survived, values=n)) + 
+  geom_waffle(color = "white", 
+              size = .25, 
+              n_rows = 10,
+              flip = TRUE) + facet_wrap(~type, nrow = 5, strip.position = "top") + dark_theme_gray() +
+  theme( plot.title = element_text(size=24, color= "white", hjust=0.5),
+        legend.position = c(0.55,0.1), 
+        text = element_text(size=18),
+         axis.text.x =element_blank(),
+      axis.title.x = element_blank(), 
+      axis.text.y=element_blank(),
+      axis.ticks= element_blank()) +
+      scale_fill_manual(values = c("#dfdedc","#16a1c6")) +
+      labs(title = "Five-year survival rates in most common cancers - 2006-12")
+
+
+```
+
+
+```{r animate black waffle chart}
+
+p <- list(p1,p2)
+
+saveGIF({
+    for(i in 1:2) plot(p[[i]])
+},movie.name = "survival_black.gif", interval = 0.25, nmax = 30, 
+ani.width = 800)
+
+```

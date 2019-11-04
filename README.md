@@ -24,10 +24,16 @@ I visualized the improvement of cancer survival rates between 1975-77 to 2006-20
 
 ## Animated
 
--Coming Soon- 
+White background
 
 <p align="center">
   <img src="survival.gif">
+</p>
+
+Black background
+
+<p align="center">
+  <img src="survival_black.gif">
 </p>
 
 
