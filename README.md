@@ -1,6 +1,6 @@
 ## Different visualizations of cancer statistics 
 
-I visualized the improvement of cancer survival rates between 1975-77 to 2006-2012.
+I visualized the changes in cancer survival rates between 1975-77 to 2006-2012.
 
 **Data**: Original publication and the excel file [here](data)
 
