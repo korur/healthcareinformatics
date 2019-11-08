@@ -17,8 +17,10 @@ library(tidyverse) # ggplot2, dplyr, tidyr, readr,
                    # purrr, tibble, stringr, forcat
 library(ggdark)
 library(animation)
+library(waffle)
 
-cancer <- read_excel( "data/cancersurvivalstatistics.xls", sheet = 3)
+setwd("..")
+cancer <- read_excel("data/cancersurvivalstatistics.xls", sheet = 3)
 
 ```
 
@@ -86,8 +88,8 @@ waffle_tall <- waffle_77 %>% gather(survived, n, -type)
 
 # Final 1
 # cancer Survival rates in 20 most common cancers
-p1 <- waffle_tall %>% 
-  filter(survived %in% c("Yes", "No")) %>% ggplot(aes(fill=survived, values=n)) + 
+p1 <- waffle_tall %>%
+  ggplot(aes(fill=survived, values=n)) + 
   geom_waffle(color = "white", 
               size = .25, 
               n_rows = 10,
@@ -109,15 +111,6 @@ p1 <- waffle_tall %>%
 # Cancer waffle graph (2006-12)
 
 ```{r 2006-12 period}
-waffle_77 <- cancer %>% mutate(Y1977 = round(Y1977, 0), Y2012=round(Y2012,0)) 
-waffle_77 <- waffle_77 %>% mutate(Yes = Y1977)
-waffle_77 <- waffle_77 %>% mutate(No = 100-Yes)
-waffle_77 <- waffle_77[ ,c(1,6,7)]
-# Gather the values 
-waffle_tall <- waffle_77 %>% gather(survived, n, -type)
-
-waffle_tall %>% ggplot(aes(fill=survived, values=n)) + geom_waffle(color = "white", size = .25, n_rows = 10, flip = TRUE) + facet_wrap(~type, nrow = 1, strip.position = "bottom")
-
 
 waffle_12 <- cancer %>% mutate(Y2012 = round(Y2012, 0), Yes=round(Y2012,0)) 
 waffle_12 <- waffle_12 %>% mutate(Yes =Y2012)
@@ -131,7 +124,7 @@ waffle_tall_12 <- waffle_12 %>% gather(survived, n, -type)
 # Final 1
 # Cancer survival rates in 20 most common cancers
 p2 <- waffle_tall_12 %>% 
-  filter(survived %in% c("Yes", "No")) %>% ggplot(aes(fill=survived, values=n)) + 
+  ggplot(aes(fill=survived, values=n)) + 
   geom_waffle(color = "white", 
               size = .25, 
               n_rows = 10,
