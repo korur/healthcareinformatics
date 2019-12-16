@@ -14,7 +14,7 @@ library(fontawesome)
 library(extrafont)
 library(readxl)
 library(tidyverse) # ggplot2, dplyr, tidyr, readr, 
-                   # purrr, tibble, stringr, forcat
+                   # purrr, tibble, stringr, forcats
 library(ggdark)
 library(animation)
 library(waffle)
