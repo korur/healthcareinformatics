@@ -5,26 +5,38 @@ date: "12/30/2019"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(cgdsr)
+
 ```
 
-## R Markdown
+```{r. guide}
+# Create CGDS object
+mycgds = CGDS("https://www.cbioportal.org/")
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+test(mycgds)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# Get list of cancer studies at server
+getCancerStudies(mycgds)
 
-```{r cars}
-summary(cars)
+# Get available case lists (collection of samples) for a given cancer study
+mycancerstudy = getCancerStudies(mycgds)[2,1]
+mycaselist = getCaseLists(mycgds,mycancerstudy)[1,1]
+
+# Get available genetic profiles
+mygeneticprofile = getGeneticProfiles(mycgds,mycancerstudy)[4,1]
+
+# Get data slices for a specified list of genes, genetic profile and case list
+getProfileData(mycgds,c('BRCA1','BRCA2'),mygeneticprofile,mycaselist)
+
+# Get clinical data for the case list
+myclinicaldata = getClinicalData(mycgds,mycaselist)
+
+# documentation
+help('cgdsr')
+help('CGDS')
+
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
