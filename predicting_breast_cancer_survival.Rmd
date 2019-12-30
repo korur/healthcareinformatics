@@ -40,3 +40,12 @@ help('CGDS')
 
 ```
 
+# Resources
+
+**machine learning algorithm for predicting pfs**
+
+https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-019-2929-8
+
+**use of GAMs to categorise contnious variables in lung disease prediction**
+
+https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/1471-2288-13-83

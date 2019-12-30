@@ -1,0 +1,22 @@
+---
+title: "european_biotechs"
+author: "Serdar Korur"
+date: "12/30/2019"
+output: html_document
+---
+
+```{r, read data. warning=FALSE, message=FALSE}
+library(readxl)
+library(tidyverse)
+
+biotech <- read_excel("~/workingdirectory/european_biotech_list.xls", col_names = FALSE)
+names(biotech) <- c("company", "location", "function")
+
+biotech$company <- str_replace_all(biotech$company, pattern = "Add'l Locations", "")
+
+
+biotech <- biotech %>% separate(location, c("country", "city"), sep = " - ")
+
+
+```
+
