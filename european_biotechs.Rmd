@@ -13,10 +13,20 @@ biotech <- read_excel("~/workingdirectory/european_biotech_list.xls", col_names 
 names(biotech) <- c("company", "location", "function")
 
 biotech$company <- str_replace_all(biotech$company, pattern = "Add'l Locations", "")
+biotech <- biotech %>% separate(location, c("country", "city"), sep = "-")
+biotech$company <- str_replace_all(biotech$company, pattern = "
+                                   Czech Re", "")
+biotech$country <- str_trim(biotech$country, side="both")
 
-
-biotech <- biotech %>% separate(location, c("country", "city"), sep = " - ")
-
-
+# more cleaning
+biotech$country <- str_replace_all(biotech$country, pattern = "Uk", "UK")
+biotech$country <- str_replace_all(biotech$country, pattern = "Czech Repubic", "Czech Republic")
+bio <- biotech %>% 
+  drop_na(company) %>% 
+  group_by(country) %>% 
+  summarize(n=n()) %>% 
+  top_n(100) %>% 
+  arrange(desc(n)) %>%
+  print(n=100)
 ```
 
