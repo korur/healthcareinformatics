@@ -21,12 +21,37 @@ biotech$country <- str_trim(biotech$country, side="both")
 # more cleaning
 biotech$country <- str_replace_all(biotech$country, pattern = "Uk", "UK")
 biotech$country <- str_replace_all(biotech$country, pattern = "Czech Repubic", "Czech Republic")
+biotech$country <- str_replace_all(biotech$country, pattern = "Czech Republic", "Czechia")
+
 bio <- biotech %>% 
   drop_na(company) %>% 
   group_by(country) %>% 
+  distinct_at(vars(company)) %>% 
   summarize(n=n()) %>% 
   top_n(100) %>% 
   arrange(desc(n)) %>%
   print(n=100)
 ```
 
+
+check shorter form by count(sort=TRUE)
+**good** https://suzan.rbind.io/2018/04/dplyr-tutorial-4/
+
+
+```{r, European population data}
+# downloaded from https://appsso.eurostat.ec.europa.eu/nui/setupDownloads.do
+
+europop <- read_excel("~/workingdirectory/europe_population_2018_eurostat.xls", col_names = FALSE)
+names(europop) <- c("country", "population_2018")
+
+europop$population_2018 <- as.numeric(europop$population_2018)
+
+biopop <- bio %>% right_join(europop) %>% 
+mutate(biotech_per_pop=n/population_2018*1000000) %>% arrange(desc(biotech_per_pop))
+
+biopop
+```
+
+# Discussion
+
+Ireland biotech boom resource: https://lscconnect.com/biotech-booming/
