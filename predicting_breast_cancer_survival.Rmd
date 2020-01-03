@@ -72,6 +72,40 @@ lmout
 anova(lmout) # There is a significant relation between mutation count and fraction of genome altered
 ```
 
+
+```{r, check other datasets}
+  # https://www.cbioportal.org/datasets
+# List all studies
+cancerlist <- getCancerStudies(mycgds)
+
+# To find studies where breast is mentioned in the description
+aaa <- str_which(cancerlist$name, "Breast")
+cancerlist[aaa]
+
+# Get Clinical data for the breast cancer study no 252
+# The Metastatic Breast Cancer Project (Provisional, October 2018
+mycancerstudy = getCancerStudies(mycgds)[46,1]
+mycaselist = getCaseLists(mycgds,mycancerstudy)[1,1]
+myclinicaldata = getClinicalData(mycgds,mycaselist)
+dim(myclinicaldata)
+view(myclinicaldata)
+
+
+
+# subset data
+myc <- myclinicaldata[,c("MUTATION_COUNT", "FRACTION_GENOME_ALTERED" )]
+myc <- myc %>% drop_na(MUTATION_COUNT)
+
+
+# Visualize
+myc %>% ggplot(aes(x=FRACTION_GENOME_ALTERED, y=MUTATION_COUNT)) + geom_point() + geom_smooth()
+
+#fit a linear model
+lmout <- lm(formula = FRACTION_GENOME_ALTERED ~ MUTATION_COUNT, data = myc)
+lmout
+anova(lmout) # There is a significant relation between mutation count and fraction of genome altered
+```
+
 # Resources
 
 **machine learning algorithm for predicting pfs**
