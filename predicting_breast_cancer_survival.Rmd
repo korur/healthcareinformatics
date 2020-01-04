@@ -98,12 +98,56 @@ myc <- myc %>% drop_na(MUTATION_COUNT)
 
 
 # Visualize
+
 myc %>% ggplot(aes(x=FRACTION_GENOME_ALTERED, y=MUTATION_COUNT)) + geom_point() + geom_smooth()
 
-#fit a linear model
+# fit a linear model
+
 lmout <- lm(formula = FRACTION_GENOME_ALTERED ~ MUTATION_COUNT, data = myc)
 lmout
 anova(lmout) # There is a significant relation between mutation count and fraction of genome altered
+```
+
+```{r, modelling multiple datasets}
+# for loop
+myc <- list()
+myclinicaldata <- list()
+for (i in 1:252){
+mycancerstudy <- getCancerStudies(mycgds)[i,1]
+mycaselist <- getCaseLists(mycgds,mycancerstudy)[1,1]
+myclinicaldata <- getClinicalData(mycgds,mycaselist)
+if("FRACTION_GENOME_ALTERED" %in% names(myclinicaldata)) {
+  myc[[i]] <- myclinicaldata[,c("MUTATION_COUNT", "FRACTION_GENOME_ALTERED" )]
+}
+}
+vec <- lapply(myc,is.null)
+datafrac <- which(vec==FALSE)
+myc <- list()
+
+#second for loop
+lmout <- list()
+for (i in datafrac) {
+mycancerstudy <- getCancerStudies(mycgds)[i,1]
+mycaselist <- getCaseLists(mycgds,mycancerstudy)[1,1]
+myclinicaldata <- getClinicalData(mycgds,mycaselist)
+myc <- myclinicaldata[,c("MUTATION_COUNT", "FRACTION_GENOME_ALTERED" )]
+myc <- myc %>% drop_na(MUTATION_COUNT)
+
+lmout[[i]] <- lm(formula = FRACTION_GENOME_ALTERED ~ MUTATION_COUNT, data = myc)
+
+}
+
+a <- list()
+for (i in datafrac) {
+  a[[i]] <- summary(lmout[[i]])$adj.r.squared * 100
+}
+
+#bad record 48,137... high=105,120
+```
+
+```{r, lmer model for predicting mutation_count with fraction of genome altered}
+library(lme4)
+
 ```
 
 # Resources
