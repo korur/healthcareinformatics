@@ -43,7 +43,7 @@ help('CGDS')
 
 # Looking for breast cancer data
 
-```{r, search breast cancer studies, Whole-exome sequencing of 237 metastatic breast cancer samples.}
+```{r, search breast cancer studies, Whole-exome sequencing of 237 metastatic breast cancer samples}
 
 # List all studies
 cancerlist <- getCancerStudies(mycgds)
@@ -112,12 +112,15 @@ anova(lmout) # There is a significant relation between mutation count and fracti
 # for loop
 myc <- list()
 myclinicaldata <- list()
-for (i in 1:252){
+index <- setdiff(1:252, c(48,137,140,163))
+for (i in index){
 mycancerstudy <- getCancerStudies(mycgds)[i,1]
 mycaselist <- getCaseLists(mycgds,mycancerstudy)[1,1]
 myclinicaldata <- getClinicalData(mycgds,mycaselist)
-if("FRACTION_GENOME_ALTERED" %in% names(myclinicaldata)) {
+if("FRACTION_GENOME_ALTERED" %in% names(myclinicaldata)){
+   if("MUTATION_COUNT" %in% names(myclinicaldata)){
   myc[[i]] <- myclinicaldata[,c("MUTATION_COUNT", "FRACTION_GENOME_ALTERED" )]
+   }
 }
 }
 vec <- lapply(myc,is.null)
@@ -142,8 +145,60 @@ for (i in datafrac) {
   a[[i]] <- summary(lmout[[i]])$adj.r.squared * 100
 }
 
-#bad record 48,137... high=105,120
+# Combine whole dataset
+myc2 <- myc[datafrac]
+for (i in 1:129) {
+  myc2[[i]] <- myc2[[i]] %>% mutate(ID = i)
+}
+
+mycall <- do.call(rbind, myc2)
+dim(mycall)
+
+## apply a linear model
+lmfull <- lm(formula = FRACTION_GENOME_ALTERED ~ MUTATION_COUNT, data = mycall)
+## apply a linear mixed model
+lmerfull <- lmer(FRACTION_GENOME_ALTERED ~ MUTATION_COUNT + (1 | ID), data = mycall)
 ```
+
+```{r, test}
+
+# for loop
+myc <- list()
+myclinicaldata <- list()
+for (i in 1:10){
+mycancerstudy <- getCancerStudies(mycgds)[i,1]
+mycaselist <- getCaseLists(mycgds,mycancerstudy)[1,1]
+myclinicaldata <- getClinicalData(mycgds,mycaselist)
+if("FRACTION_GENOME_ALTERED" %in% names(myclinicaldata)){
+   if("MUTATION_COUNT" %in% names(myclinicaldata)){
+  myc[[i]] <- myclinicaldata[,c("MUTATION_COUNT", "FRACTION_GENOME_ALTERED" )]
+   }
+}
+}
+
+vec <- lapply(myc,is.null)
+datafrac <- which(vec==FALSE)
+myc <- list()
+
+#second for loop
+lmout <- list()
+for (i in datafrac) {
+mycancerstudy <- getCancerStudies(mycgds)[i,1]
+mycaselist <- getCaseLists(mycgds,mycancerstudy)[1,1]
+myclinicaldata <- getClinicalData(mycgds,mycaselist)
+myc <- myclinicaldata[,c("MUTATION_COUNT", "FRACTION_GENOME_ALTERED" )]
+myc <- myc %>% drop_na(MUTATION_COUNT)
+
+lmout[[i]] <- lm(formula = FRACTION_GENOME_ALTERED ~ MUTATION_COUNT, data = myc)
+
+}
+
+a <- list()
+for (i in datafrac) {
+  a[[i]] <- summary(lmout[[i]])$adj.r.squared * 100
+}
+```
+
 
 ```{r, lmer model for predicting mutation_count with fraction of genome altered}
 library(lme4)
