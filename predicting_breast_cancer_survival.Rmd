@@ -13,9 +13,8 @@ library(cgdsr)
 ```
 
 ```{r. guide}
-# Create CGDS object
+# Create CGDS object by CGDS function
 mycgds = CGDS("https://www.cbioportal.org/")
-
 test(mycgds)
 
 # Get list of cancer studies at server
@@ -49,15 +48,16 @@ help('CGDS')
 cancerlist <- getCancerStudies(mycgds)
 
 # To find studies where breast is mentioned in the description
-aaa <- str_which(cancerlist$description, "breast")
-cancerlist[aaa]
+breast <- str_which(cancerlist$name, "[Bb]reast")
+cancerlist[breast,]
 
 # Get Clinical data for the breast cancer study no 252
 # The Metastatic Breast Cancer Project (Provisional, October 2018
 mycancerstudy = getCancerStudies(mycgds)[252,1]
 mycaselist = getCaseLists(mycgds,mycancerstudy)[1,1]
 myclinicaldata = getClinicalData(mycgds,mycaselist)
-view(myclinicaldata)
+dim(myclinicaldata)
+# view(myclinicaldata)
 
 # subset data
 
@@ -67,20 +67,21 @@ myc <- myclinicaldata[,c("MUTATION_COUNT", "FRACTION_GENOME_ALTERED" )]
 myc %>% ggplot(aes(x=FRACTION_GENOME_ALTERED, y=MUTATION_COUNT)) + geom_point() + geom_smooth()
 
 #fit a linear model
-lmout <- llm(formula = FRACTION_GENOME_ALTERED ~ MUTATION_COUNT, data = myc)
-lmout
+lmout <- lm(formula = FRACTION_GENOME_ALTERED ~ MUTATION_COUNT, data = myc)
+summary(lmout)
 anova(lmout) # There is a significant relation between mutation count and fraction of genome altered
 ```
 
 
-```{r, check other datasets}
-  # https://www.cbioportal.org/datasets
+```{r, check another breast cancer dataset}
+# https://www.cbioportal.org/datasets
+
 # List all studies
 cancerlist <- getCancerStudies(mycgds)
 
 # To find studies where breast is mentioned in the description
-aaa <- str_which(cancerlist$name, "Breast")
-cancerlist[aaa]
+breast <- str_which(cancerlist$name, "[Bb]reast")
+cancerlist[breast,]
 
 # Get Clinical data for the breast cancer study no 252
 # The Metastatic Breast Cancer Project (Provisional, October 2018
@@ -88,7 +89,7 @@ mycancerstudy = getCancerStudies(mycgds)[46,1]
 mycaselist = getCaseLists(mycgds,mycancerstudy)[1,1]
 myclinicaldata = getClinicalData(mycgds,mycaselist)
 dim(myclinicaldata)
-view(myclinicaldata)
+# view(myclinicaldata)
 
 
 
@@ -108,11 +109,19 @@ lmout
 anova(lmout) # There is a significant relation between mutation count and fraction of genome altered
 ```
 
+
+# Average mutation count in different cancers
+
+```{r}
+
+```
+
+
 ```{r, modelling multiple datasets}
 # for loop
 myc <- list()
 myclinicaldata <- list()
-index <- setdiff(1:252, c(48,137,140,163))
+index <- setdiff(1:273, c(48,137,140,163))
 for (i in index){
 mycancerstudy <- getCancerStudies(mycgds)[i,1]
 mycaselist <- getCaseLists(mycgds,mycancerstudy)[1,1]
@@ -134,7 +143,7 @@ mycancerstudy <- getCancerStudies(mycgds)[i,1]
 mycaselist <- getCaseLists(mycgds,mycancerstudy)[1,1]
 myclinicaldata <- getClinicalData(mycgds,mycaselist)
 myc <- myclinicaldata[,c("MUTATION_COUNT", "FRACTION_GENOME_ALTERED" )]
-myc <- myc %>% drop_na(MUTATION_COUNT)
+myc <- myc %>% drop_na()
 
 lmout[[i]] <- lm(formula = FRACTION_GENOME_ALTERED ~ MUTATION_COUNT, data = myc)
 
@@ -152,12 +161,15 @@ for (i in 1:129) {
 }
 
 mycall <- do.call(rbind, myc2)
+mycall <- mycall %>% drop_na(MUTATION_COUNT)
 dim(mycall)
 
 ## apply a linear model
 lmfull <- lm(formula = FRACTION_GENOME_ALTERED ~ MUTATION_COUNT, data = mycall)
 ## apply a linear mixed model
 lmerfull <- lmer(FRACTION_GENOME_ALTERED ~ MUTATION_COUNT + (1 | ID), data = mycall)
+
+#mycall$FRACTION_GENOME_ALTERED <- scale(mycall$FRACTION_GENOME_ALTERED)
 ```
 
 ```{r, test}
@@ -199,13 +211,27 @@ for (i in datafrac) {
 }
 ```
 
+compare models with anova()
 
+lmout <- lm(MUTATION_COUNT ~ FRACTION_GENOME_ALTERED, data = mycall)
+lmer1 <- lmer(MUTATION_COUNT ~ FRACTION_GENOME_ALTERED + (1|ID), data = mycall)
+lmer2 <- lmer(MUTATION_COUNT ~ (FRACTION_GENOME_ALTERED|ID),data = mycall)
+lmer3 <- lmer(MUTATION_COUNT ~ FRACTION_GENOME_ALTERED + (FRACTION_GENOME_ALTERED|ID),data = mycall)
+lmer4 <- lmer(MUTATION_COUNT ~ FRACTION_GENOME_ALTERED + (1 + FRACTION_GENOME_ALTERED|ID),data = mycall)
+
+use AIC(lmout,lmer1,lmer2,lmer3,lmer4)
+
+Results: Cancer study ID explained 30% of variance in mutation count, 5% of variance explained by the FRACTION_GENOME_ALTERED
 ```{r, lmer model for predicting mutation_count with fraction of genome altered}
 library(lme4)
 
+# models
 ```
 
 # Resources
+
+**Bioinformatic Tools**
+https://icahn.mssm.edu/research/bioinformatics/resources
 
 **machine learning algorithm for predicting pfs**
 
