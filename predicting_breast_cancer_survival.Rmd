@@ -117,7 +117,7 @@ anova(lmout) # There is a significant relation between mutation count and fracti
 ```
 
 
-```{r, modelling multiple datasets}
+```{r, Engineer multiple datasets into a target dataframe}
 # for loop
 myc <- list()
 myclinicaldata <- list()
@@ -134,9 +134,48 @@ if("FRACTION_GENOME_ALTERED" %in% names(myclinicaldata)){
 }
 vec <- lapply(myc,is.null)
 datafrac <- which(vec==FALSE)
-myc <- list()
 
-#second for loop
+
+# Combine whole dataset
+myc2 <- myc[datafrac]
+for (i in 1:44) {
+  myc2[[i]] <- myc2[[i]] %>% mutate(ID = datafrac[i], study = getCancerStudies(mycgds)[datafrac[i],2])
+}
+
+mycall <- do.call(rbind, myc2)
+mycall <- mycall %>% drop_na()
+dim(mycall)
+# Count mean number of mutations in whole data
+mean(mycall$MUTATION_COUNT)
+mean(mycall$FRACTION_GENOME_ALTERED)
+# Count mean number of mutations in each study
+mycall %>% group_by(ID, study) %>% summarise(n = mean(MUTATION_COUNT)) %>% arrange(-n)
+mycall %>% group_by(ID, study) %>% summarise(n = mean(FRACTION_GENOME_ALTERED)) %>% arrange(-n)
+# Create a data frame for each study with mutation cou8nt and fraction genome altere
+sum_frac_mut <- mycall %>% group_by(ID, study) %>% summarise(nfrac = mean(FRACTION_GENOME_ALTERED), nmut = mean(MUTATION_COUNT)) 
+# Plot
+sum_frac_mut %>% ggplot(aes(nfrac, log(nmut), color = study)) + geom_point() + geom_label_repel(aes(label=ID, size =0.1)) + theme(legend.position = "none") # all studies
+# lung studies
+sum_frac_mut %>% ggplot(aes(nfrac, log(nmut), color = study)) + geom_point() + geom_label_repel(aes(label=ID, color = ifelse(grepl('Lung', study), "red", "blue") + theme(legend.position = "none")
+                                                                                                    
+```
+
+
+```{r}
+ geom_label_repel(aes(label=ID, color = ifelse(grepl('Lung', study), "red", "blue")))
+```
+
+
+```{r, modelling multiple datasets}
+#mycall$FRACTION_GENOME_ALTERED <- scale(mycall$FRACTION_GENOME_ALTERED)
+
+## apply a linear model
+lmfull <- lm(formula = FRACTION_GENOME_ALTERED ~ MUTATION_COUNT, data = mycall)
+## apply a linear mixed model
+lmerfull <- lmer(FRACTION_GENOME_ALTERED ~ MUTATION_COUNT + (1 | ID), data = mycall)
+
+
+# Apply linear model to all datasets which contain both variables "MUTATION_COUNT", "FRACTION_GENOME_ALTERED"
 lmout <- list()
 for (i in datafrac) {
 mycancerstudy <- getCancerStudies(mycgds)[i,1]
@@ -153,23 +192,6 @@ a <- list()
 for (i in datafrac) {
   a[[i]] <- summary(lmout[[i]])$adj.r.squared * 100
 }
-
-# Combine whole dataset
-myc2 <- myc[datafrac]
-for (i in 1:129) {
-  myc2[[i]] <- myc2[[i]] %>% mutate(ID = i)
-}
-
-mycall <- do.call(rbind, myc2)
-mycall <- mycall %>% drop_na(MUTATION_COUNT)
-dim(mycall)
-
-## apply a linear model
-lmfull <- lm(formula = FRACTION_GENOME_ALTERED ~ MUTATION_COUNT, data = mycall)
-## apply a linear mixed model
-lmerfull <- lmer(FRACTION_GENOME_ALTERED ~ MUTATION_COUNT + (1 | ID), data = mycall)
-
-#mycall$FRACTION_GENOME_ALTERED <- scale(mycall$FRACTION_GENOME_ALTERED)
 ```
 
 ```{r, test}
@@ -232,6 +254,7 @@ library(lme4)
 
 **Bioinformatic Tools**
 https://icahn.mssm.edu/research/bioinformatics/resources
+https://www.coursera.org/lecture/network-biology/classifying-patients-tumors-from-tcga-Eeej3?authMode=signup&redirectTo=%2Flearn%2Fnetwork-biology%3Faction%3Denroll
 
 **machine learning algorithm for predicting pfs**
 
