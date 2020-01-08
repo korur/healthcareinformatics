@@ -5,6 +5,30 @@ date: "12/30/2019"
 output: html_document
 ---
 
+Data Integration from TCGA Cancer Data Base, Analysis, Applications for mixed effect models and gaussian mixture models (GMMs)
+TCGA present a great data source for cancer and being publicly open it allows data to be digged deeper. 
+
+By including genetic alterations, we can stratify patients in different cancers and correlate with the survival data.
+
+Step 1: Create a mutation_count, fraction_genome_altered, Combined dataframe. 
+
+mean mutation count in different cancers
+Mean genomic alterations in different cancers
+Differentiate between cancers. Example: 
+
+Mixed effectss model --> No big correlation between mutation numbers and fraction of genome altered
+
+Use Bivariate mixture models to differentiate different type of cancers. 
+
+Include an R Shiny App 
+
+* Apply each tumor type a linear model.  check the highest and lowest
+* Apply whole linear model
+* Apply mixed effects model : When it is good to use
+* Compare 
+* R Shiny App
+* Make a stratification between tumors:
+
 **Determining the cancer type and molecular subtype has important clinical implications.** The primary site is however unknown for some malignancies discovered in the metastatic stage. Moreover liquid biopsies may be used to screen for tumoral DNA, which upon detection needs to be assigned to a site-of-origin. Classifiers based on genomic features are a promising approach to prioritize the tumor anatomical site, type and subtype. We examined the predictive ability of causal (driver) somatic mutations in this task, comparing it against global patterns of non-selected (passenger) mutations, including features based on regional mutation density (RMD). In the task of distinguishing 18 cancer types, the driver mutations–mutated oncogenes or tumor suppressors, pathways and hotspots–classified 36% of the patients to the correct cancer type. In contrast, the features based on passenger mutations did so at 92% accuracy, with similar contribution from the RMD and the trinucleotide mutation spectra. The RMD and the spectra covered distinct sets of patients with predictions. In particular, introducing the RMD features into a combined classification model increased the fraction of diagnosed patients by 50 percentage points (at 20% FDR). Furthermore, RMD was able to discriminate molecular subtypes and/or anatomical site of six major cancers. The advantage of passenger mutations was upheld under high rates of false negative mutation calls and with exome sequencing, even though overall accuracy decreased. We suggest whole genome sequencing is valuable for classifying tumors because it captures global patterns emanating from mutational processes, which are informative of the underlying tumor biology.
 
 
@@ -163,7 +187,9 @@ sum_frac_mut %>% ggplot(aes(nfrac, log(nmut), color = study)) + geom_point() + g
 # Stomach studies 
 sum_frac_mut %>% ggplot(aes(nfrac, log(nmut), color = study)) + geom_point() + geom_label_repel(aes(label=ID, color = ifelse(grepl('Stomach', study), "red", "blue"))) + theme(legend.position = "none")
 
-                                                                                                                                                                                                  
+# List Studies
+test <- sum_frac_mut %>% filter(grepl('Lung', study))
+                                                                                                                                                                                                
 ```
 
 
