@@ -164,16 +164,19 @@ datafrac <- which(vec==FALSE)
 
 # Combine whole dataset
 myc2 <- myc[datafrac]
-for (i in 1:44) {
+for (i in 1:length(datafrac)) {
   myc2[[i]] <- myc2[[i]] %>% mutate(ID = datafrac[i], study = getCancerStudies(mycgds)[datafrac[i],2])
 }
 
 mycall <- do.call(rbind, myc2)
 mycall <- mycall %>% drop_na()
 dim(mycall)
+# saveRDS(mycall, file = "mycalldataforTcgaApp.rds")
+
 # Count mean number of mutations in whole data
-mean(mycall$MUTATION_COUNT)
-mean(mycall$FRACTION_GENOME_ALTERED)
+mean(mycall$MUTATION_COUNT) # 107
+mean(mycall$FRACTION_GENOME_ALTERED) # 0.23
+
 # Count mean number of mutations in each study
 mycall %>% group_by(ID, study) %>% summarise(n = mean(MUTATION_COUNT)) %>% arrange(-n)
 mycall %>% group_by(ID, study) %>% summarise(n = mean(FRACTION_GENOME_ALTERED)) %>% arrange(-n)
