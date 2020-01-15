@@ -16,11 +16,11 @@ mean mutation count in different cancers
 Mean genomic alterations in different cancers
 Differentiate between cancers. Example: 
 
-Mixed effectss model --> No big correlation between mutation numbers and fraction of genome altered
+**Mixed effectss model** --> No big correlation between mutation numbers and fraction of genome altered
 
 Use Bivariate mixture models to differentiate different type of cancers. 
 
-Include an R Shiny App 
+Include an R ShinyDashboard App 
 
 * Apply each tumor type a linear model.  check the highest and lowest
 * Apply whole linear model
@@ -33,7 +33,6 @@ Include an R Shiny App
 
 
 ```{r, message=FALSE, warning=FALSE}
-
 library(tidyverse)
 library(cgdsr)
 # library(TCGA-Assembler)
@@ -45,8 +44,8 @@ mycgds = CGDS("https://www.cbioportal.org/")
 test(mycgds)
 
 # Get list of cancer studies at server
-getCancerStudies(mycgds)
-
+listofstudies <- getCancerStudies(mycgds)
+dim(listofstudies)
 # Get available case lists (collection of samples) for a given cancer study
 mycancerstudy = getCancerStudies(mycgds)[2,1]
 mycaselist = getCaseLists(mycgds,mycancerstudy)[1,1]
@@ -148,7 +147,7 @@ anova(lmout) # There is a significant relation between mutation count and fracti
 # for loop
 myc <- list()
 myclinicaldata <- list()
-index <- setdiff(1:273, c(48,137,140,163))
+index <- setdiff(1:273, c(49,141,164))
 for (i in index){
 mycancerstudy <- getCancerStudies(mycgds)[i,1]
 mycaselist <- getCaseLists(mycgds,mycancerstudy)[1,1]
