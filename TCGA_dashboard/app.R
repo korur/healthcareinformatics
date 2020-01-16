@@ -15,13 +15,12 @@ header <- dashboardHeader(
                      status = "success",
                      href = "https://www.dataatomic.com"))
 )
+
 sidebar <- dashboardSidebar(
     selectInput("c_type", "Cancer type",
-                choices = c("All", levels(data$type))
+                choices = c("All", levels(data$type)), selected = "All"
     ),
-    selectInput("s_type", "Study",
-                choices = levels(data$study)
-    ),
+    
     sidebarMenu(
         menuItem("Data", 
                  tabName = "data"
@@ -68,28 +67,37 @@ server <- function(input, output) {
     #creating the valueBoxOutput content
     output$mean_mutations <- renderValueBox({
         valueBox(
-            data %>% filter(type == input$c_type) %>% summarise(n = mean(MUTATION_COUNT)),10,
+            ifelse(input$c_type == "All",  data %>% summarise(n = mean(MUTATION_COUNT)) %>% round(0),
+            data %>% filter(type == input$c_type) %>% summarise(n = mean(MUTATION_COUNT)) %>% round(0)
+            ), "MUTATIONS"
             ,icon = icon("dna")
             ,color = "yellow")  
     })
     output$mean_alt <- renderValueBox({
         valueBox(
-            data %>% filter(type == input$c_type) %>% summarise(n = mean(FRACTION_GENOME_ALTERED)),1,
-            
+            ifelse(input$c_type == "All",  data %>% summarise(n = mean(FRACTION_GENOME_ALTERED)) %>% round(2),
+            data %>% filter(type == input$c_type) %>% summarise(n = mean(FRACTION_GENOME_ALTERED)) %>% round(2)
+            ), "% GENOME ALTERED"
             ,icon = icon('percent')
             ,color = "orange")  
     })
     output$study <- renderValueBox({
         valueBox(
-        data %>% filter(type == input$c_type) %>% count(),0.1,
-            ,icon = icon("folder-open")
-            ,color = "blue")  
-    })
-    output$patient <- renderValueBox({
-        valueBox(
-            data %>% filter(type == input$c_type) %>% summarise(n = mean(FRACTION_GENOME_ALTERED)), "PATIENTS",
+            ifelse(input$c_type == "All",  data %>% distinct(study) %>% count(),
+                   data %>% filter(type == input$c_type) %>% distinct(study) %>% count()
+            ), "STUDIES"
             ,icon = icon("users")
             ,color = "blue")  
     })
+   
+        output$patient <- renderValueBox({
+            valueBox(
+                ifelse(input$c_type == "All",  nrow(data),
+                       data %>% filter(type == input$c_type) %>% nrow()
+                ), "PATIENTS"
+                ,icon = icon("users")
+                ,color = "blue")  
+        })
+        
 }
 shinyApp(ui = ui, server = server)
