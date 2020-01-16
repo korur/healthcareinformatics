@@ -5,6 +5,7 @@ mean_altered <- 0.23
 patientcount <- 48008
 studycount <- 145
 # Shiny dashboard App
+
 header <- dashboardHeader(
     dropdownMenu(type = "notifications", 
                  notificationItem(
