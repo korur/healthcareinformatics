@@ -1,12 +1,13 @@
 library(shiny)
 library(shinydashboard)
-mean_mutations <- 107
-mean_altered <- 0.23
-patientcount <- 48008
-studycount <- 145
+data <- readRDS('mycalldataforTcgaApp_with_cancerclass.rds')
+data$type = as.factor(data$type)
+data$study = as.factor(data$study)
+
 # Shiny dashboard App
 
 header <- dashboardHeader(
+    title= "TCGA DATA Analysis",
     dropdownMenu(type = "notifications", 
                  notificationItem(
                      text = "Build by www.dataatomic.com", 
@@ -15,8 +16,11 @@ header <- dashboardHeader(
                      href = "https://www.dataatomic.com"))
 )
 sidebar <- dashboardSidebar(
-    sliderInput("rateThreshold", "Warn when rate exceeds",
-                min = 0, max = 50, value = 3, step = 0.1
+    selectInput("c_type", "Cancer type",
+                choices = c("All", levels(data$type))
+    ),
+    selectInput("s_type", "Study",
+                choices = levels(data$study)
     ),
     sidebarMenu(
         menuItem("Data", 
@@ -28,60 +32,64 @@ sidebar <- dashboardSidebar(
     )
 )
 
-
-
-
-body <- dashboardBody(
-    
-    fluidRow(
-        # Add a value box for mean mutaion count
-        valueBox(
-            value = mean_mutations,
-            subtitle = "Average mutations", 
-            icon = icon("dna"), color = 'yellow', width = 3
-        ),
-        valueBox(
-            value = mean_altered,
-            subtitle = "Average genome alterations", 
-            icon = icon("percent"), color = 'yellow',width = 3
-        ),
-        valueBox(
-            value = studycount,
-            subtitle = "Studies", 
-            icon = icon("folder-open"),color = 'aqua',width = 3
-        ),
-        valueBox(
-            value = patientcount,
-            subtitle = "Patients", 
-            icon = icon("users"),color = 'aqua',width = 3
-        )
-        ),
-    tabItems(
-        tabItem(tabName = "data", tabBox(
-            title = "Dataatomic",
-            tabPanel("Tab1", "Tab1 content"),
-            tabPanel("Tab2", "Tab2 content")
-        )),
-        tabItem(tabName = "dashboard", 
-                tabBox(
-                    title = "testbox",
-                    tabPanel("Weight", "Tab1 content"),
-                    tabPanel("Height", "Tab2 content")
-                ))
-    ),
-    
-    
-    
-    
+frow1 <- fluidRow(
+    valueBoxOutput("mean_mutations")
+    ,valueBoxOutput("mean_alt")
+    ,valueBoxOutput("study")
+    ,valueBoxOutput("patient")
+    )
+frow2 <- fluidRow( 
+    box(
+        title = "Mutation vs % Fraction of Genome alterations"
+        ,status = "primary"
+        ,solidHeader = TRUE 
+        ,collapsible = TRUE 
+        ,plotOutput("revenuebyPrd", height = "300px")
+    )
+    ,box(
+        title = "Workflow"
+        ,status = "primary"
+        ,solidHeader = TRUE 
+        ,collapsible = TRUE 
+        ,plotOutput("revenuebyRegion", height = "300px")
+    ) 
 )
+# combine the two fluid rows to make the body
+body <- dashboardBody(frow1, frow2)
+
+#completing the ui part with dashboardPage
+ui <- dashboardPage(title = 'This is my Page title', header, sidebar, body, skin='purple')
 
 
-ui <- dashboardPage(
-    header = header,
-    sidebar = sidebar,
-    body <- body
-)
-
-server <- function(input, output) {}
-
+# create the server functions for the dashboard  
+server <- function(input, output) { 
+    #some data manipulation to derive the values of KPI boxes
+    
+    #creating the valueBoxOutput content
+    output$mean_mutations <- renderValueBox({
+        valueBox(
+            data %>% filter(type == input$c_type) %>% summarise(n = mean(MUTATION_COUNT)),10,
+            ,icon = icon("dna")
+            ,color = "yellow")  
+    })
+    output$mean_alt <- renderValueBox({
+        valueBox(
+            data %>% filter(type == input$c_type) %>% summarise(n = mean(FRACTION_GENOME_ALTERED)),1,
+            
+            ,icon = icon('percent')
+            ,color = "orange")  
+    })
+    output$study <- renderValueBox({
+        valueBox(
+        data %>% filter(type == input$c_type) %>% count(),0.1,
+            ,icon = icon("folder-open")
+            ,color = "blue")  
+    })
+    output$patient <- renderValueBox({
+        valueBox(
+            data %>% filter(type == input$c_type) %>% summarise(n = mean(FRACTION_GENOME_ALTERED)), "PATIENTS",
+            ,icon = icon("users")
+            ,color = "blue")  
+    })
+}
 shinyApp(ui = ui, server = server)
