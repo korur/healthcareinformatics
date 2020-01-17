@@ -1,0 +1,8 @@
+---
+title: "statistic_quotes"
+author: "Serdar Korur"
+date: "1/5/2020"
+output: html_document
+---
+
+As George Box famously noted:  “…the statistician knows…that in nature there never was a normal distribution, there never was a straight line, yet with normal and linear assumptions, known to be false, he can often derive results which match, to a useful approximation, those found in the real world.” (JASA, 1976, Vol. 71, 791-799).

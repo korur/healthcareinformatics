@@ -213,18 +213,28 @@ cancernames <- mycall %>% distinct(study)
 
 ```
 
+```{r, graphs by type}
+sum_frac_mut <- mycall5 %>% group_by(ID, type) %>% summarise(frac = mean(FRACTION_GENOME_ALTERED), mutations = mean(MUTATION_COUNT)) 
+sum_frac_mut <- mycall5 %>% group_by(ID, type) %>% summarise(frac = mean(FRACTION_GENOME_ALTERED), mutations = mean(MUTATION_COUNT))  # all types
+# lung studies
+sum_frac_mut %>% ggplot(aes(frac, log(mutations), color = type)) + geom_point() + geom_label_repel(aes(label=ID, color = ifelse(grepl('Lung', study), "red", "blue"))) + theme(legend.position = "none")
+```
+
+
+
+
 ```{r, continued...Engineer multiple datasets into a target dataframe}
 # Count mean number of mutations in each study
 mycall %>% group_by(ID, study) %>% summarise(n = mean(MUTATION_COUNT)) %>% arrange(-n)
 mycall %>% group_by(ID, study) %>% summarise(n = mean(FRACTION_GENOME_ALTERED)) %>% arrange(-n)
 # Create a data frame for each study with mutation cou8nt and fraction genome altere
-sum_frac_mut <- mycall %>% group_by(ID, study) %>% summarise(nfrac = mean(FRACTION_GENOME_ALTERED), nmut = mean(MUTATION_COUNT)) 
+sum_frac_mut <- mycall %>% group_by(ID, study) %>% summarise(frac = mean(FRACTION_GENOME_ALTERED), mutations = mean(MUTATION_COUNT)) 
 # Plot
-sum_frac_mut %>% ggplot(aes(nfrac, log(nmut), color = study)) + geom_point() + geom_label_repel(aes(label=ID, size =0.1)) + theme(legend.position = "none") # all studies
+sum_frac_mut %>% ggplot(aes(frac, log(mutations), color = study)) + geom_point() + geom_label_repel(aes(label=ID, size =0.1)) + theme(legend.position = "none") # all studies
 # lung studies
-sum_frac_mut %>% ggplot(aes(nfrac, log(nmut), color = study)) + geom_point() + geom_label_repel(aes(label=ID, color = ifelse(grepl('Lung', study), "red", "blue"))) + theme(legend.position = "none")
+sum_frac_mut %>% ggplot(aes(frac, log(mutations), color = study)) + geom_point() + geom_label_repel(aes(label=ID, color = ifelse(grepl('Lung', study), "red", "blue"))) + theme(legend.position = "none")
 # Stomach studies 
-sum_frac_mut %>% ggplot(aes(nfrac, log(nmut), color = study)) + geom_point() + geom_label_repel(aes(label=ID, color = ifelse(grepl('Stomach', study), "red", "blue"))) + theme(legend.position = "none")
+sum_frac_mut %>% ggplot(aes(frac, log(mutations), color = study)) + geom_point() + geom_label_repel(aes(label=ID, color = ifelse(grepl('Stomach', study), "red", "blue"))) + theme(legend.position = "none")
 
 # List Studies
 test <- sum_frac_mut %>% filter(grepl('Lung', study))

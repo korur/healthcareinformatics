@@ -1,5 +1,8 @@
 library(shiny)
 library(shinydashboard)
+library(ggrepel)
+library(tidyverse)
+library(DT)
 data <- readRDS('mycalldataforTcgaApp_with_cancerclass.rds')
 data$type = as.factor(data$type)
 data$study = as.factor(data$study)
@@ -31,47 +34,53 @@ sidebar <- dashboardSidebar(
     )
 )
 
-frow1 <- fluidRow(
-    valueBoxOutput("mean_mutations")
-    ,valueBoxOutput("mean_alt")
-    ,valueBoxOutput("study")
-    ,valueBoxOutput("patient")
-    )
-frow2 <- fluidRow( 
-    box(
-        title = "Mutation vs % Fraction of Genome alterations"
-        ,status = "primary"
-        ,solidHeader = TRUE 
-        ,collapsible = TRUE 
-        ,plotOutput("revenuebyPrd", height = "300px")
-    )
-    ,box(
-        title = "Workflow"
-        ,status = "primary"
-        ,solidHeader = TRUE 
-        ,collapsible = TRUE 
-        ,plotOutput("revenuebyRegion", height = "300px")
-    ) 
-)
 # combine the two fluid rows to make the body
-body <- dashboardBody(frow1, frow2)
+body <- dashboardBody( 
+fluidRow(
+    valueBoxOutput("mean_mutations", width = 3)
+    ,valueBoxOutput("mean_alt", width = 3)
+    ,valueBoxOutput("study", width = 3)
+    ,valueBoxOutput("patient", width = 3)
+    ),
+fluidRow( 
+    box(
+        title = "Mutation vs % Altered genome"
+        ,width = "8"
+        ,solidHeader = TRUE 
+        ,collapsible = TRUE 
+        ,plotOutput("mut_genome", height = "500px")
+    ),
+    
+    box(
+        title = "Mutations & % Altered genome per study"
+        ,width = "4"
+        ,solidHeader = TRUE 
+        ,collapsible = TRUE 
+        ,column(width = 12,
+                DT::dataTableOutput("mut_table"),style = "height:300px; overflow-y: scroll;overflow-x: scroll;"
+        )
+    )
+
+)  
+) #dash
+
 
 #completing the ui part with dashboardPage
-ui <- dashboardPage(title = 'This is my Page title', header, sidebar, body, skin='purple')
+ui <- dashboardPage(title = 'This is my Page title', header, sidebar, body, skin= "purple")
 
 
 # create the server functions for the dashboard  
 server <- function(input, output) { 
     #some data manipulation to derive the values of KPI boxes
-    
+    sum_frac_mut <- data %>% group_by(ID, study) %>% summarise(frac = round(mean(FRACTION_GENOME_ALTERED),3), mutations = round(mean(MUTATION_COUNT),0)) 
     #creating the valueBoxOutput content
     output$mean_mutations <- renderValueBox({
         valueBox(
             ifelse(input$c_type == "All",  data %>% summarise(n = mean(MUTATION_COUNT)) %>% round(0),
             data %>% filter(type == input$c_type) %>% summarise(n = mean(MUTATION_COUNT)) %>% round(0)
-            ), "MUTATIONS"
+            ), "AVG. MUTATION COUNT"
             ,icon = icon("dna")
-            ,color = "yellow")  
+            ,color = "red")  
     })
     output$mean_alt <- renderValueBox({
         valueBox(
@@ -79,7 +88,7 @@ server <- function(input, output) {
             data %>% filter(type == input$c_type) %>% summarise(n = mean(FRACTION_GENOME_ALTERED)) %>% round(2)
             ), "% GENOME ALTERED"
             ,icon = icon('percent')
-            ,color = "orange")  
+            ,color = "green")  
     })
     output$study <- renderValueBox({
         valueBox(
@@ -87,7 +96,7 @@ server <- function(input, output) {
                    data %>% filter(type == input$c_type) %>% distinct(study) %>% count()
             ), "STUDIES"
             ,icon = icon("users")
-            ,color = "blue")  
+            ,color = "yellow")  
     })
    
         output$patient <- renderValueBox({
@@ -98,6 +107,15 @@ server <- function(input, output) {
                 ,icon = icon("users")
                 ,color = "blue")  
         })
-        
+        output$mut_genome <- renderPlot({
+             
+            # Plot
+            sum_frac_mut %>% ggplot(aes(frac, log(mutations), color = study)) + geom_point() + geom_label_repel(aes(label=ID, size =0.1)) + theme(legend.position = "none") # all studies
+        })
+        output$mut_table <- renderDataTable({
+            
+            datatable(sum_frac_mut, options = list(paging = FALSE))
+            
+        })
 }
 shinyApp(ui = ui, server = server)
