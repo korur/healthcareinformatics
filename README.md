@@ -5,11 +5,11 @@ I visualized the Global Coronavirus cases/deaths.
 
 
 
-**Code**: click [here](covidtreemap/covidtreemap.R)
+**Code**: click [here](https://tools.dataatomic.com/shiny/www/covidtreemap.html)
 
 **Interact with the Widget**: [here](covidtreemap/covidtreemap.html)
 
-## Waffle plot
+## D3 Treemap
 
 <p align="center">
   <img src="images/covidtreemap.gif">
