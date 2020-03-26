@@ -115,6 +115,7 @@ mycancerstudy = getCancerStudies(mycgds)[46,1]
 mycaselist = getCaseLists(mycgds,mycancerstudy)[1,1]
 myclinicaldata = getClinicalData(mycgds,mycaselist)
 dim(myclinicaldata)
+
 # view(myclinicaldata)
 
 
@@ -147,7 +148,7 @@ anova(lmout) # There is a significant relation between mutation count and fracti
 # for loop
 myc <- list()
 myclinicaldata <- list()
-index <- setdiff(1:273, c(49,141,164))
+index <- setdiff(1:275, c(49,141,164))
 for (i in index){
 mycancerstudy <- getCancerStudies(mycgds)[i,1]
 mycaselist <- getCaseLists(mycgds,mycancerstudy)[1,1]
@@ -180,7 +181,7 @@ mean(mycall$FRACTION_GENOME_ALTERED) # 0.23
 
 # Labelling each study to cancer class
 ```{r}
-mycall5 <- mycall4 %>% mutate(type = ifelse(str_detect(study, 'Adrenal|Paraganglioma|Pheochromocytoma|Adrenocortical|Adenoid'), "Adrenal gland",
+mycall5 <- mycall %>% mutate(type = ifelse(str_detect(study, 'Adrenal|Paraganglioma|Pheochromocytoma|Adrenocortical|Adenoid'), "Adrenal gland",
 ifelse(str_detect(study, 'Breast'), "Breast",
 ifelse(str_detect(study, 'Bladder|Urothelial'), "Urethary",
 ifelse(str_detect(study, 'Blood|Myeloid|Leukemia|Lymphoma'), 'Blood',
@@ -203,10 +204,16 @@ ifelse(str_detect(study, 'Thyroid|Thymoma'), 'Thyroid',
 ifelse(str_detect(study, 'Testicular|Germ'),'Testicular',
 ifelse(str_detect(study, 'Uterine|Cervical|Ovarian|Endometrial'), 'Reproductory',
 ifelse(str_detect(study, "Wilms'"), "Wilms'", "Other") )))))))))))))))))))))))
-saveRDS(mycall5, file = "mycalldataforTcgaApp_with_cancerclass.rds")
 ```
 
 # Group each cancer
+# Save a backup Dataframe
+
+```{r, saving the prepared data}
+saveRDS(mycall5, file = "mycalldataforTcgaApp_with_cancerclass.rds")
+```
+
+# Create names vector of eash study
 
 ```{r, create a dictionary}
 cancernames <- mycall %>% distinct(study)
@@ -214,10 +221,9 @@ cancernames <- mycall %>% distinct(study)
 ```
 
 ```{r, graphs by type}
-sum_frac_mut <- mycall5 %>% group_by(ID, type) %>% summarise(frac = mean(FRACTION_GENOME_ALTERED), mutations = mean(MUTATION_COUNT)) 
-sum_frac_mut <- mycall5 %>% group_by(ID, type) %>% summarise(frac = mean(FRACTION_GENOME_ALTERED), mutations = mean(MUTATION_COUNT))  # all types
+sum_frac_mut <- mycall %>% group_by(ID, type, study) %>% summarise(frac = mean(FRACTION_GENOME_ALTERED), mutations = mean(MUTATION_COUNT))  # all types
 # lung studies
-sum_frac_mut %>% ggplot(aes(frac, log(mutations), color = type)) + geom_point() + geom_label_repel(aes(label=ID, color = ifelse(grepl('Lung', study), "red", "blue"))) + theme(legend.position = "none")
+sum_frac_mut %>% ggplot(aes(frac, log(mutations), color = type)) + geom_point() + geom_label_repel(aes(label=ID, color = ifelse(grepl('Lung', type), "red", "blue"))) + theme(legend.position = "none")
 ```
 
 

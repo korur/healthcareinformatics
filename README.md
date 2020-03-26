@@ -1,3 +1,22 @@
+## How to make an interactive `Coronavirus treemap` using `treemap` and `d3treeR`
+
+
+I visualized the Global Coronavirus cases/deaths.
+
+
+
+**Code**: click [here](covidtreemap/covidtreemap.R)
+
+**Interact with the Widget**: [here](covidtreemap/covidtreemap.html)
+
+## Waffle plot
+
+<p align="center">
+  <img src="images/covidtreemap.gif">
+</p>
+
+
+
 ## Different visualizations of cancer statistics 
 
 I visualized the changes in cancer survival rates between 1975-77 to 2006-2012.
