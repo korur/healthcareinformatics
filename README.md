@@ -1,12 +1,13 @@
 ## How to make an interactive `Coronavirus treemap` using `treemap` and `d3treeR`
 
 
-Here is how to visualize Global Coronavirus cases/deaths with an interactive treemap.
+I visualized the Global Coronavirus cases/deaths.
 
 
-**Code**: click [here](https://tools.dataatomic.com/shiny/www/covidtreemap.html)
 
-**Interact with the Widget**: [here](covidtreemap/covidtreemap.html)
+**Code**: click [here](covidtreemap/covidtreemap.R)
+
+**Interact with the Widget**: [here](https://tools.dataatomic.com/shiny/www/covidtreemap.html)
 
 ## D3 Treemap
 
