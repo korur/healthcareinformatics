@@ -92,7 +92,7 @@ df$state <- ifelse(is.na(df$state), df$country,df$state)
 # Make a Treemap
 
 
-# Group countries with more than entries
+# Group countries 
 df3 <- df %>% filter(date==max(date))
 df4 <- df3 %>% group_by(country, type) %>% summarise(n=sum(cases)) 
 
